@@ -29,5 +29,8 @@ Shift - Slows time (singleplayer only);
 
 ## Activating Multiplayer mode
 
-To start multiplayer, pause the game and press W, S, Up or Down on the pause screen. 
+To start multiplayer, pause the game and press W, S, Up or Down on the pause screen.
+
+## Screenshot
+![screenshot]([http://url/to/img.png](https://img.youtube.com/vi/RNWfqEAE3ww/maxresdefault.jpg))
 
