@@ -55,44 +55,6 @@ public class Pong extends JPanel implements Runnable, KeyListener {
             illusion = Math.max(illusion - 1, 0);
         }
     }
-    
-    public void moveEnemy() {
-        if (Math.ceil(Math.random() * 100) <= 50 && player.points - enemy.points < 2) {
-            return;
-        }
-            if (ball.xSpeed < 0) {
-                
-                if ((enemy.y + (enemy.sizeY / 2)) <= (screenSizeY / 2) - 20
-                || (enemy.y + (enemy.sizeY / 2)) >= (screenSizeY / 2) + 20) {
-                    if (screenSizeY / 2 < enemy.y + (enemy.sizeY / 2)) {
-                    enemy.speed = -enemy.speedIncrease;
-                } else if (screenSizeY / 2 > enemy.y + (enemy.sizeY / 2)) {
-                    enemy.speed = enemy.speedIncrease;
-                } else {
-                    enemy.speed = 0;
-                }
-            } else {
-                enemy.speed = 0;
-            }
-            
-        } else if (ball.xSpeed > 0) {
-            
-            int targetPos = ball.y + (ball.ySpeed * 2);
-            
-            if ((enemy.y + (enemy.sizeY / 2)) <= targetPos - 20 || (enemy.y + (enemy.sizeY / 2)) >= targetPos + 20) {
-                if (targetPos < enemy.y + (enemy.sizeY / 2)) {
-                    enemy.speed = -enemy.speedIncrease;
-                } else if (targetPos > enemy.y + (enemy.sizeY / 2)) {
-                    enemy.speed = enemy.speedIncrease;
-                } else {
-                    enemy.speed = 0;
-                }
-            } else {
-                enemy.speed = 0;
-            }
-
-        }
-    }
 
     public void playSound(String sound) {
         try {
@@ -106,24 +68,19 @@ public class Pong extends JPanel implements Runnable, KeyListener {
             clip.open(audioIn);
             clip.start();
         } catch (UnsupportedAudioFileException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         } catch (LineUnavailableException e) {
-            e.printStackTrace();
         }
     }
 
-    Player player = new Player();
-    Player enemy = new Player();
-    Ball ball = new Ball();
     static int screenSizeX = 800;
     static int screenSizeY = 600;
+    Player player = new Player(50, 250, screenSizeX, screenSizeY);
+    Player enemy = new Player(750, 250, screenSizeX, screenSizeY);
+    Ball ball = new Ball(screenSizeX / 2, screenSizeY / 2, screenSizeX, screenSizeY);
     static int randomR = 255;
     static int randomG = 255;
     static int randomB = 255;
-
-    static int score = 0;
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Pong!");
@@ -151,8 +108,6 @@ public class Pong extends JPanel implements Runnable, KeyListener {
     }
 
     public void run() {
-        enemy.x = 750;
-
         while (true) {
             if (!paused) {
             update();
@@ -172,10 +127,7 @@ public class Pong extends JPanel implements Runnable, KeyListener {
                 enemy.points++;
             }
 
-            ball.x = screenSizeX / 2;
-            ball.y = screenSizeY / 2;
-            ball.xSpeed = (Math.floor((Math.random() * 10) % 2) == 0) ? 5 : -5;
-            ball.ySpeed = (Math.floor((Math.random() * 10) % 2) == 0) ? 3 : -3;
+            ball.reset();
 
             blackout = 0;
             illusion = 0;
@@ -185,7 +137,7 @@ public class Pong extends JPanel implements Runnable, KeyListener {
         }
 
         if (!p2On) {
-            moveEnemy();
+            enemy.autoMove(player, ball, screenSizeX, screenSizeY);
         }
 
         if (ball.ySpeed == 0) {
@@ -196,7 +148,6 @@ public class Pong extends JPanel implements Runnable, KeyListener {
             ball.ySpeed *= -1;
             randomizeColors();
             playSound("wall_hit.wav");
-
         }
 
         if (bulletTime && bulletTimeCharge > 0) {
@@ -209,20 +160,9 @@ public class Pong extends JPanel implements Runnable, KeyListener {
             bulletTimeCharge++;
         }
 
-        ball.x += ball.xSpeed;
-        ball.y += ball.ySpeed;
-
-        if (enemy.speed > 0) {
-            enemy.y = Math.min(enemy.y + enemy.speed, screenSizeY - enemy.sizeY);
-        } else if (enemy.speed < 0) {
-            enemy.y = Math.max(enemy.y + enemy.speed, 0);
-        }
-
-        if (player.speed > 0) {
-            player.y = Math.min(player.y + player.speed, screenSizeY - player.sizeY);
-        } else if (player.speed < 0) {
-            player.y = Math.max(player.y + player.speed, 0);
-        }
+        ball.move();
+        enemy.move();
+        player.move();
 
         for (int i = 1; i <= 4; i++) {
             int newBallPosX = ball.x + ((ball.xSpeed / 4) * i);
@@ -349,16 +289,11 @@ public class Pong extends JPanel implements Runnable, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_R) {
-            ball.x = screenSizeX/2;
-            ball.y = screenSizeY/2;
-            ball.xSpeed = ball.initXSpeed;
-            ball.ySpeed = ball.initYSpeed;
+            ball.reset();
             bulletTimeCharge = 10;
             player.points = 0;
-            player.x = 50;
-            player.y = 100;
-            enemy.x = 750;
-            enemy.y = 100;
+            player.reset();
+            enemy.reset();
             enemy.points = 0;
         }
         
